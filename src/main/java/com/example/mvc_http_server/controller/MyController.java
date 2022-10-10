@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 
@@ -133,39 +134,110 @@ public class MyController {
         }
     }
 
-    private  String getMsg(MultipartFile file){
+    private void multipartFileToLocalFile(MultipartFile file, String filePath){
+        String fileName = file.getOriginalFilename();
+        BufferedReader br = null;
+        BufferedWriter bw = null;
+        try {
+            InputStream is = file.getInputStream();
+            BufferedInputStream bis = new BufferedInputStream(is);
+            int read = bis.read();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private  void save2Local(MultipartFile file, String filePath){
+//        String filePath = "";
+        String fileName = file.getOriginalFilename();
         String ans = null;
+        BufferedInputStream bis = null;
+        BufferedOutputStream bos = null;
+        InputStream is = null;
         try{
-            ans = new String(file.getBytes(), "utf-8");
+            is = file.getInputStream();
+            bis = new BufferedInputStream(is);
+            bos = new BufferedOutputStream(new FileOutputStream(new File(filePath + fileName)));
+            int count = 0;
+            byte[] bytes = new byte[1024];
+            while ((count = bis.read(bytes)) != -1){
+                bos.write(bytes, 0, count);
+            }
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//            byte[] byteArr = new byte[1024];
+//            int length;
+//            while ((length = is.read(byteArr)) != -1){
+//                baos.write(byteArr, 0, length);
+//            }
+//            ans = baos.toString(StandardCharsets.UTF_8.name());
+//            ans = new String(file.getBytes(), "utf-8");
         } catch (IOException e){
             e.printStackTrace();
-            return e.getMessage();
+        }finally {
+            try {
+                bos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                bis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 //        System.out.println("ans value: " + ans);
-        return ans;
+//        return ans;
     }
+
+//    private  String getMsg(MultipartFile file){
+//        String ans = null;
+//        try{
+//            InputStream inputStream = file.getInputStream();
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//            byte[] byteArr = new byte[1024];
+//            int length;
+//            while ((length = inputStream.read(byteArr)) != -1){
+//                baos.write(byteArr, 0, length);
+//            }
+//            ans = baos.toString(StandardCharsets.UTF_8.name());
+////            ans = new String(file.getBytes(), "utf-8");
+//        } catch (IOException e){
+//            e.printStackTrace();
+//            return e.getMessage();
+//        }
+////        System.out.println("ans value: " + ans);
+//        return ans;
+//    }
 
     /**
      * 文件上传
      *  curl 'http://127.0.0.1:8080/post/file' -X POST -F 'file=@hello.txt'
      */
     @PostMapping("/fileUpload1")
-    public String fileUpload1(@RequestParam("file")MultipartFile file, @RequestHeader Map<String, String> name){
-        System.out.println("name: " + name);
-        String res = getMsg(file);
-        System.out.println(res);
-        strToFile(res, "D:\\test\\res\\result.log");
-        return res;
+    public String fileUpload1(@RequestParam("file")MultipartFile file){
+//        System.out.println("上传的文件名" + file.getOriginalFilename());
+//        String filePath = "/home/lgh/get_curldata/";
+        String filePath = "/home/lgh/curl_data/res/";
+//        String filePath = "D:\\test\\res\\";
+        String fileName = file.getOriginalFilename();
+        save2Local(file, filePath);
+        return "finshed";
     }
 
-    @PostMapping("/fileUpload2")
-    public String fileUpload2(MultipartHttpServletRequest request){
-        MultipartFile file = request.getFile("file");
-        String res = getMsg(file);
-        System.out.println(res);
-        strToFile(res, "D:\\test\\res\\result.log");
-        return res;
-    }
+//    @PostMapping("/fileUpload2")
+//    public String fileUpload2(MultipartHttpServletRequest request){
+//        MultipartFile file = request.getFile("file");
+//        String res = getMsg(file);
+//        System.out.println(res);
+//        strToFile(res, "D:\\test\\res\\result.log");
+//        return res;
+//    }
 
     /**
      * 使用静态内部类,简单定义一个入参实体类
