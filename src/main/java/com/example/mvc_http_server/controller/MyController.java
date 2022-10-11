@@ -240,6 +240,25 @@ public class MyController {
 //    }
 
     /**
+     *  较于fileUpload1，速度有
+     * @param file
+     * @return
+     */
+    @PostMapping("/fileUpload3")
+    public String fileUpload3(@RequestParam("file")MultipartFile file){
+        String filePath = "D:\\test\\res\\";
+//        String filePath = "/home/lgh/curl_data/res/";
+        String fileName = file.getOriginalFilename();
+        try {
+            File dst = new File(filePath + fileName);
+            file.transferTo(dst);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "null";
+    }
+
+    /**
      * 使用静态内部类,简单定义一个入参实体类
      */
     static class ParamDemo{
