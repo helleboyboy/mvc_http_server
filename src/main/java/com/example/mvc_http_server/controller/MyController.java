@@ -1,17 +1,20 @@
 package com.example.mvc_http_server.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
 @RestController
 public class MyController {
+    private static final Logger logger = LoggerFactory.getLogger(MyController.class);
 
     @RequestMapping(value = "/get_info", method = RequestMethod.GET)
     public String getInfos(){
@@ -43,8 +46,9 @@ public class MyController {
      */
     @GetMapping("/test")
     public String test(String param1, String param2) {
-        String result = String.format("get in handle1 param1 is %s, param2 is %s", param1, param2);
-        System.out.println("test method executing !!!");
+        String result = String.format("日志输出: get in handle1 param1 is %s, param2 is %s", param1, param2);
+//        System.out.println("test method executing !!!");
+        logger.info(result);
         return result;
     }
 
@@ -249,13 +253,23 @@ public class MyController {
         String filePath = "D:\\test\\res\\";
 //        String filePath = "/home/lgh/curl_data/res/";
         String fileName = file.getOriginalFilename();
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_hhmm");
+        String format = simpleDateFormat.format(date);
+        String dstFile = filePath + fileName + "_" + format;
+        String out = String.format("文件 %s 传输成功！！！", dstFile);
+        String err = String.format("文件 %s 传输失败！！！", dstFile);
+        String sta = String.format("文件 %s 开始传输！！！", dstFile);
         try {
-            File dst = new File(filePath + fileName);
+            File dst = new File(dstFile);
+            logger.info(sta);
             file.transferTo(dst);
+            logger.info(out);
         } catch (IOException e) {
+            logger.error(err);
             e.printStackTrace();
         }
-        return "null";
+        return out;
     }
 
     /**
