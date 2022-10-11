@@ -1,11 +1,24 @@
 package com.example.mvc_http_server.other;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ReadBigFile {
+    public static void fileAddDate(){
+        String filePath = "D:\\test\\res\\";
+        String orgName = "fsimage";
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_hhmm");
+        String str = simpleDateFormat.format(date);
+        String dst = filePath + orgName + "_" + str;
+        System.out.println(dst);
+    }
+
     public static void main(String[] args) {
 //        bufferedReader2bufferedWriter();
-        bufferedInputStream2OutputStream();
+//        bufferedInputStream2OutputStream();
+        fileAddDate();
     }
 
     public static void bufferedInputStream2OutputStream(){
