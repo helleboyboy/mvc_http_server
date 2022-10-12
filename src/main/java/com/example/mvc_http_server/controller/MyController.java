@@ -1,67 +1,82 @@
 package com.example.mvc_http_server.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 
 @RestController
 public class MyController {
+    /**
+     * 增加slf4j日志功能
+     */
     private static final Logger logger = LoggerFactory.getLogger(MyController.class);
 
-    @RequestMapping(value = "/get_info", method = RequestMethod.GET)
-    public String getInfos(){
+    /**
+     * 读取properties配置文件的属性值！
+     */
+    @Value("${file.fileLocation}")
+    private String filePathToPro;
+
+    @Value("${file.suffix}")
+    private String fileSuffix;
+
+    /**
+     * GET请求 http://localhost:9898/get_info
+     * 返回 json字符串
+     * @return "{\"a\", \"b\"}"
+     */
+    @GetMapping(value = "/get_info")
+    public String getInfo(){
+        String res = String.format("getInfo method executed !%n");
+        logger.info(res);
         return "{\"a\", \"b\"}";
     }
 
     /**
-     * ===========================================================================================================
-     * ===========================================================================================================
-     * ===========================================================================================================
-     * ===========================================================================================================
-     * ===========================================================================================================
-     * ===========================================================================================================
-     * @return
+     * GET请求 http://localhost:9898/hello
+     * 返回普通字符串的请求方法
+     * @return "Hello Spring Boot!"
      */
-    // url请求，支持GET和POST，返回值固定
     @RequestMapping("/hello")
     public String hello() {
-        System.out.println("hello method executing !!!");
-        return "Hello Spring Boot!";
+        String res = String.format("hello method executed !%n");
+        logger.info(res);
+        return "Hello WELCOME !";
     }
 
 
     /**
-     * GET请求 http://127.0.0.1:8080/test?param1=222
-     * @param param1
-     * @param param2
+     * GET请求 http://localhost:9898/testTwo?param1=222
+     * @param param1 第一个参数
+     * @param param2 第二个参数
      * @return get in handle1 param1 is 222, param2 is null
      */
-    @GetMapping("/test")
+    @GetMapping("/testTwo")
     public String test(String param1, String param2) {
-        String result = String.format("日志输出: get in handle1 param1 is %s, param2 is %s", param1, param2);
-//        System.out.println("test method executing !!!");
+        String result = String.format("get in handle1 param1 is %s, param2 is %s", param1, param2);
         logger.info(result);
         return result;
     }
 
 
     /**
-     * POST请求 http://127.0.0.1:8080/test?param1=222&param2=111
-     * @param demo
+     * POST请求 http://localhost:9898/testClass?param1=222&param2=111
+     * @param demo 参数封装类
      * @return post in handle1 param1 is 222, param2 is 111
      */
-    @PostMapping("/test")
+    @PostMapping("/testClass")
     public String test(ParamDemo demo){
-        String result = String.format("post in handle2 param1 is %s, param2 is %s", demo.param1, demo.param2);
-        System.out.println("test method executing !!!");
+        String result = String.format("post in handle2 param1 is %s, param2 is %s",
+                demo.param1, demo.param2);
+        logger.info(result);
         return result;
     }
 
@@ -70,28 +85,30 @@ public class MyController {
      * 请求入参是一个实体,并且加上了 @RequestBody
      * 一般适用于前端Header中Content-Type 为 application/json的场景
      * 注意入参要是json格式
-     * curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"param1": "javaAndBigdata","param2": "thinker"}' 'http://10.9.16.17:8080/testPostJson' -v
-     * @param demo
-     * @return
+     * curl -X POST
+     *      --header 'Content-Type: application/json'
+     *      --header 'Accept: application/json'
+     *      -d '{"param1": "javaAndBigdata","param2": "thinker"}'
+     *      'http://10.9.16.21:9898/testPostJson' -v
+     *
+     * @param demo 请求体
+     * @param headers 请求头
+     * @return json串
      */
     @PostMapping("/testPostJson")
     public String testJson(@RequestBody ParamDemo demo, @RequestHeader Map<String, String> headers){
-        System.out.println("====");
         headers.forEach(
-                (key,value) ->{
-                    System.out.println(String.format("Headers key: '%s', value: '%s'",key ,value));
-                });
-        System.out.println("=====");
+                (key,value) -> logger.info(String.format("Headers key: '%s', value: '%s'",key ,value)));
         String result = String.format("in handle2 param1 is %s, param2 is %s", demo.param1, demo.param2);
-        System.out.println("testJson method executing !!!");
-        System.out.println("post data are: " + result);
-        System.out.println(String.format("请求头数据：%s", demo.toString()));
+        logger.info(result);
+        String res = String.format("请求头数据：%s", demo.toString());
+        logger.info(res);
         return result;
     }
 
 
     /**
-     * GET 请求http://127.0.0.1:8080/testGetJson
+     * curl -X GET 'http://10.9.16.21:9898/testGetJson'
      * @return {
      * errorMeg: "成功",
      * errorCode: 0
@@ -99,12 +116,11 @@ public class MyController {
      */
     @GetMapping("/testGetJson")
     public Map<String,Object> testGetJson(){
-        Map<String,Object> result = new HashMap<String,Object>();
+        Map<String,Object> result = new HashMap<>();
         result.put("errorCode",0);
         result.put("errorMeg","成功");
-        System.out.println("testGetJson method executing !!!");
+        logger.info("testGetJson method executing !!!");
         return result;
-
     }
 
 
@@ -113,7 +129,11 @@ public class MyController {
      * 请求入参是一个实体,并且加上了 @RequestBody
      * 一般适用于前端Header中Content-Type 为 application/json的场景
      * 注意入参要是json格式
-     * @param demo
+     * curl -X POST --header 'Content-Type: application/json'
+     *      --header 'Accept: application/json'
+     *      -d '{"param1": "javaAndBigdata","param2": "thinker"}'
+     *      'http://10.9.16.21:9898/testReturnJson'
+     * @param demo 请求体
      * @return json
      */
     @PostMapping("/testReturnJson")
@@ -123,140 +143,112 @@ public class MyController {
         result.put("msg", "ok");
         result.put("method", "POST");
         result.put("data", demo);
-        System.out.println("testReturnJson method executing !!!");
+        logger.info("testReturnJson method executing !!!");
         return result.toJSONString();
     }
 
-
+    /**
+     *  将字符串转换为文件
+     * @param msg 转存内容
+     * @param filePath 文件存储路径
+     */
+    @SneakyThrows
     private void strToFile(String msg, String filePath){
-        try {
-            BufferedWriter bos = new BufferedWriter(new FileWriter(new File(filePath)));
+        try (
+                BufferedWriter bos = new BufferedWriter(
+                        new FileWriter(
+                                new File(filePath)))
+        ) {
+            String format = String.format("开始往 %s 文件写入", filePath);
+            String res = String.format("%s文件写入成功", filePath);
+            logger.info(format);
             bos.write(msg);
-            bos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            logger.info(res);
         }
     }
 
-    private void multipartFileToLocalFile(MultipartFile file, String filePath){
-        String fileName = file.getOriginalFilename();
-        BufferedReader br = null;
-        BufferedWriter bw = null;
-        try {
-            InputStream is = file.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-            int read = bis.read();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    /**
+     *  MultipartFile 文件转存到本地
+     * @param file 上传的文件
+     * @param filePath 文件存储路径
+     */
+    @SneakyThrows
     private  void save2Local(MultipartFile file, String filePath){
-//        String filePath = "";
         String fileName = file.getOriginalFilename();
-        String ans = null;
+        String fileNameRes = String.format("上传的文件名为：%s", fileName);
+        logger.info(fileNameRes);
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(fileSuffix);
+        String format = simpleDateFormat.format(date);
+        String dstFile = filePath + fileName + format;
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         InputStream is = null;
-        try{
+        try (FileOutputStream fileOutputStream = new FileOutputStream(dstFile)) {
             is = file.getInputStream();
             bis = new BufferedInputStream(is);
-            bos = new BufferedOutputStream(new FileOutputStream(new File(filePath + fileName)));
+            bos = new BufferedOutputStream(fileOutputStream);
             int count = 0;
-            byte[] bytes = new byte[1024];
+            byte[] bytes = new byte[1024 * 8];
+            String fileIn = String.format("开始写入 %s 文件", dstFile);
+            logger.info(fileIn);
             while ((count = bis.read(bytes)) != -1){
                 bos.write(bytes, 0, count);
             }
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//            byte[] byteArr = new byte[1024];
-//            int length;
-//            while ((length = is.read(byteArr)) != -1){
-//                baos.write(byteArr, 0, length);
-//            }
-//            ans = baos.toString(StandardCharsets.UTF_8.name());
-//            ans = new String(file.getBytes(), "utf-8");
-        } catch (IOException e){
+            String fileOut = String.format("写入 %s 文件成功", dstFile);
+            logger.info(fileOut);
+        }catch (IOException e){
+            String err = String.format("写入%s文件出错", dstFile);
+            logger.error(err);
             e.printStackTrace();
-        }finally {
-            try {
-                bos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                bis.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-//        System.out.println("ans value: " + ans);
-//        return ans;
+//        finally {
+//            if (bos != null) {
+//                bos.close();
+//            }
+//            if (bis != null) {
+//                bis.close();
+//            }
+//        }
     }
 
-//    private  String getMsg(MultipartFile file){
-//        String ans = null;
-//        try{
-//            InputStream inputStream = file.getInputStream();
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//            byte[] byteArr = new byte[1024];
-//            int length;
-//            while ((length = inputStream.read(byteArr)) != -1){
-//                baos.write(byteArr, 0, length);
-//            }
-//            ans = baos.toString(StandardCharsets.UTF_8.name());
-////            ans = new String(file.getBytes(), "utf-8");
-//        } catch (IOException e){
-//            e.printStackTrace();
-//            return e.getMessage();
-//        }
-////        System.out.println("ans value: " + ans);
-//        return ans;
-//    }
 
     /**
      * 文件上传
      *  curl 'http://127.0.0.1:8080/post/file' -X POST -F 'file=@hello.txt'
+     *  通过@Value注解来获取配置文件的内容！
      */
     @PostMapping("/fileUpload1")
     public String fileUpload1(@RequestParam("file")MultipartFile file){
-//        System.out.println("上传的文件名" + file.getOriginalFilename());
-//        String filePath = "/home/lgh/get_curldata/";
-        String filePath = "/home/lgh/curl_data/res/";
-//        String filePath = "D:\\test\\res\\";
-        String fileName = file.getOriginalFilename();
-        save2Local(file, filePath);
-        return "finshed";
+//        String filePathToPro = "/home/lgh/curl_data/res/";
+//        String filePathToPro = "D:\\test\\res\\";
+        save2Local(file, filePathToPro);
+        JSONObject res = new JSONObject();
+        res.put("msg", "ok");
+        res.put("method", "POST");
+        res.put("file", file.getOriginalFilename());
+        return res.toJSONString();
     }
 
-//    @PostMapping("/fileUpload2")
-//    public String fileUpload2(MultipartHttpServletRequest request){
-//        MultipartFile file = request.getFile("file");
-//        String res = getMsg(file);
-//        System.out.println(res);
-//        strToFile(res, "D:\\test\\res\\result.log");
-//        return res;
-//    }
 
     /**
-     *  较于fileUpload1，速度有
-     * @param file
-     * @return
+     *  较于fileUpload1，速度快
+     *  curl 'http://10.9.16.21:9898/fileUpload3' -X POST -F 'file=@a.log'
+     * @param file 上传的文件
+     * @return res
      */
     @PostMapping("/fileUpload3")
     public String fileUpload3(@RequestParam("file")MultipartFile file){
-        String filePath = "D:\\test\\res\\";
-//        String filePath = "/home/lgh/curl_data/res/";
+//        String filePathToPro = "D:\\test\\res\\";
+//        String filePathToPro = "/home/lgh/curl_data/res/";
         String fileName = file.getOriginalFilename();
+        String fileNameRes = String.format("上传的文件名为：%s", fileName);
+        logger.info(fileNameRes);
         Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_hhmm");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(fileSuffix);
         String format = simpleDateFormat.format(date);
-        String dstFile = filePath + fileName + "_" + format;
+        String dstFile = filePathToPro + fileName + format;
         String out = String.format("文件 %s 传输成功！！！", dstFile);
         String err = String.format("文件 %s 传输失败！！！", dstFile);
         String sta = String.format("文件 %s 开始传输！！！", dstFile);
@@ -269,7 +261,11 @@ public class MyController {
             logger.error(err);
             e.printStackTrace();
         }
-        return out;
+        JSONObject res = new JSONObject();
+        res.put("msg", "ok");
+        res.put("method", "POST");
+        res.put("file", file.getOriginalFilename());
+        return res.toJSONString();
     }
 
     /**

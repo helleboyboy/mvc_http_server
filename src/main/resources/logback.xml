@@ -2,9 +2,10 @@
 <configuration debug="false">
     <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
 <!--    windows 日志保存文件-->
-    <property name="LOG_HOME" value="D:\\software-data\\idea_history\\mvc_http_server\\log"/>
+<!--    <property name="LOG_HOME" value="D:\\software-data\\idea_history\\mvc_http_server\\log"/>-->
 <!--    linux 日志保存路径-->
-<!--    <property name="LOG_HOME" value="/home/lgh/curl_data/res"/>-->
+<!--    <property name="LOG_HOME" value="/opt/aspire/res"/>-->
+    <property name="LOG_HOME" value="/home/lgh/curl_data/res"/>
     <!-- 定义日志格式  -->
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%-30.30logger{30}] %msg%n"/>
     <!-- 控制台输出 -->

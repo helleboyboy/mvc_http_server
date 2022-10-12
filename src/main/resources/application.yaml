@@ -5,3 +5,9 @@ management:
         include: [health,metrics,httptrace]
     health:
       show-details: always
+
+#logging:
+#  config: /HL/IdeaProjects/SpringBoot-Item/springboot-slf4j/src/main/resources/logback.xml
+#  config: /home/lgh/curl_data/logback.xml
+#  level:
+#    com/example/mvc_http_server: trace
